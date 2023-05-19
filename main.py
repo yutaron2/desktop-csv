@@ -31,30 +31,6 @@ class CSVTable:
                     # tk.Label()はラベルを作るためのコード
                     label = tk.Label(self.tabid(row=i, column=j))
 
-    def defineTree(root):
-        column = ('keys', 'action')
-        root.title("CSV Table")
-        root.geometry("600x400")
-        tree = ttk.Treeview(root, columns=column, show='headings')
-
-        tree.column('#0',width=0, stretch='no')
-        tree.column('keys', anchor='center', width=80)
-        tree.column('action',anchor='w', width=100)
-        
-        tree.heading('keys', text='keys')
-        tree.heading('action', text='action',anchor='center')
-        
-        tree.insert(parent='', index='end', iid=0 ,values=('h', 'カーソルを左に移動する'))
-        tree.insert(parent='', index='end', iid=1 ,values=('j', 'カーソルを下に移動する'))
-        tree.insert(parent='', index='end', iid=2 ,values=('k', 'カーソルを上に移動する'))
-        tree.insert(parent='', index='end', iid=3 ,values=('l', 'カーソルを右に移動する'))
-        
-        # ウィジェットの配置
-        tree.pack(pady=10)
-        
-        # root.mainloop()はrootを表示するためのコード
-        root.mainloop()
-        
 
 class CSVTableMaker:
 
@@ -86,33 +62,33 @@ class AppCore:
         return root
 
 def makeTableFromCSV(root, csvinput):
-    column = ('keys', 'action')
+    column = ('key', 'action')
+
     root.title("CSV Table")
     root.geometry("300x400")
     tree = ttk.Treeview(root, columns=column, show='headings')
 
     tree.column('#0',width=0, stretch='yes')
-    tree.column('keys', anchor='center', width=100)
+    tree.column('key', anchor='center', width=100)
     tree.column('action',anchor='w', width=200)
-    
-    tree.heading('keys', text='keys')
+
+    tree.heading('key', text='key')
     tree.heading('action', text='action',anchor='center')
     
-    # csvinputから取り出したデータをfor文で入れる
     with open('command.csv', 'r', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
         i = 0
-        for row in reader:
-            key = row['key']
-            value = row['action']
-            tree.insert(parent='', index='end', iid=i ,values=(key, value))
-            i += 1
-        # ウィジェットの配置
-        tree.pack(pady=0)
-        
-        # root.mainloop()はrootを表示するためのコード
-        # root.mainloop()
 
+        for row in reader:
+            values = []
+            for j in range(len(column)):
+                values.append(row[column[j]])
+            tree.insert(parent='', index='end', iid=i ,values=values)
+            i += 1
+
+      
+        tree.pack(pady=0)
+  
 if __name__ == "__main__":
     # rootという変数にtk.Tk()を代入する
     core = AppCore()

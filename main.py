@@ -1,59 +1,48 @@
 import csv
 import tkinter as tk
 from tkinter import ttk
-class CSVTable:
+from abc import ABC, abstractmethod
+
+class View(ABC):
+    @abstractmethod
+    def generateView(self, root):
+        pass
+
+class CsvTableView(View):
+    def generateView(self, root):
+      column = ('key', 'action')
+
+      root.title("CSV Table")
+      root.geometry("300x400")
+      tree = ttk.Treeview(root, columns=column, show='headings')
+
+      tree.column('#0',width=0, stretch='yes')
+      tree.column('key', anchor='center', width=100)
+      tree.column('action',anchor='w', width=200)
+
+      tree.heading('key', text='key')
+      tree.heading('action', text='action',anchor='center')
+      
+      # 同じディテクトリないのcsvファイルを読み込む。getCsvでファイルの入力を受け付ける
+      # csvInput = getCsv()
+      with open('command.csv', 'r', encoding='utf-8') as csvfile:
+          reader = csv.DictReader(csvfile)
+          i = 0
+
+          for row in reader:
+              values = []
+              for j in range(len(column)):
+                  values.append(row[column[j]])
+              tree.insert(parent='', index='end', iid=i ,values=values)
+              i += 1
+
+          tree.pack(pady=0)
     
-    ## メンバ変数
-    master = None
-    filename = None
-    table_frame = None
-    
-    ## コンストラクタ
-    def __init__(self, master, filename):
-        self.master = master
-        self.filename = filename
-        # フレームを作成する
-        self.table_frame = tk.Frame(self.master)
-        # フレームを表示する pack()はフレームを表示するためのコード
-        self.table_frame.pack(fill="both", expand=True)
-        # CSVファイルを読み込む
-        self.load_csv()
-
-    def load_csv(self):
-        # CSVファイルを読み込む
-        with open(self.filename, "r") as f:
-            # csv.reader()はCSVファイルを読み込むためのコード
-            reader = csv.reader(f)
-
-            for i, row in enumerate(reader):
-                # enumerate()はリストの要素を取り出すためのコード
-                for j, cell in enumerate(row):
-                    # tk.Label()はラベルを作るためのコード
-                    label = tk.Label(self.tabid(row=i, column=j))
-
-
-class CSVTableMaker:
-
-    CSVFile = None
-    CSVTable = None
-
-    def __init__(self, CSVFileName):
-        self.CSVFile = CSVFileName
-
-    # 外から呼び出すコード。
-    def instantiateCSVTable(self):
-        #　root を開発者に入力させたくないのでここで決め打ち
-        self.CSVTable = CSVTable(root, self.CSVFile)
-        
-        return self.CSVTable
-        
 class AppCore:
-
     # インスタンス化と同時に、ライブラリのオブジェクトを作成する
     def __init__(self):
         self.root = self.initializeTK()
-
-    # メインウィンドウのインスタンスを作成する。
+    # メインウィンドウのインスタンスを作成する。 ウィンドウサイズは固定で600×400
     def initializeTK(self):
         root = tk.Tk()
         root.geometry("600x400")
@@ -61,44 +50,13 @@ class AppCore:
 
         return root
 
-def makeTableFromCSV(root, csvinput):
-    column = ('key', 'action')
-
-    root.title("CSV Table")
-    root.geometry("300x400")
-    tree = ttk.Treeview(root, columns=column, show='headings')
-
-    tree.column('#0',width=0, stretch='yes')
-    tree.column('key', anchor='center', width=100)
-    tree.column('action',anchor='w', width=200)
-
-    tree.heading('key', text='key')
-    tree.heading('action', text='action',anchor='center')
+#rootと、Viewクラスを継承したクラスを引数に取る
+def finalize(root, view: View):
+    view.generateView(root)
+    root.mainloop()
     
-    with open('command.csv', 'r', encoding='utf-8') as csvfile:
-        reader = csv.DictReader(csvfile)
-        i = 0
-
-        for row in reader:
-            values = []
-            for j in range(len(column)):
-                values.append(row[column[j]])
-            tree.insert(parent='', index='end', iid=i ,values=values)
-            i += 1
-
-      
-        tree.pack(pady=0)
-  
 if __name__ == "__main__":
-    # rootという変数にtk.Tk()を代入する
     core = AppCore()
-    csvInput = 'command.csv'
-    print('csvInput')
-    
-    # テーブルを定義
-    makeTableFromCSV(core.root, csvInput)
-    
-    # 画面表示
-    core.root.mainloop()
-
+    view = CsvTableView()
+    finalize(core.root, view)
 
